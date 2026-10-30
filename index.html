@@ -68,16 +68,14 @@
 
   /* ── printing ── */
   .ink {
-    background-image: linear-gradient(105deg, var(--ink) calc(var(--lx) * 100% - 34%), var(--ink-hi) calc(var(--lx) * 100%), var(--ink) calc(var(--lx) * 100% + 34%));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 1px 0 var(--press-a)) drop-shadow(0 -.4px 0 var(--press-b));
+    color: var(--ink);
+    text-shadow: 0 1px 0 var(--press-a), 0 -.4px 0 var(--press-b);
   }
   .soft { --ink: var(--ink-soft); }
   .foil {
     background-image: linear-gradient(105deg, var(--foil-lo) 0%, var(--foil-mid) calc(var(--lx) * 100% - 24%), var(--foil-hi) calc(var(--lx) * 100%), var(--foil-mid) calc(var(--lx) * 100% + 24%), var(--foil-lo) 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     padding: .3em .2em .15em; margin: -.3em -.2em -.15em;
-    filter: drop-shadow(0 .7px .4px rgba(40,25,10,.4));
   }
 
   /* ── envelope ── */
@@ -86,7 +84,7 @@
   .env-back { z-index: 1; border-radius: 3px; overflow: hidden; }
   /* inside of the pocket: tissue grain, a shadow falling towards the mouth, and a sheen that follows the light */
   .env-back::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.22) 34%, rgba(0,0,0,.3)); }
-  .env-back::after { content: ''; position: absolute; inset: 0; mix-blend-mode: soft-light; background: radial-gradient(60% 50% at calc(var(--lx) * 100%) 10%, rgba(255,255,255,.55), transparent 70%); }
+  .env-back::after { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 50% at 50% 10%, rgba(255,255,255,.18), transparent 70%); }
   .env-front { z-index: 3; pointer-events: none; }
   .env-front::after { content: ''; position: absolute; left: 4%; right: 4%; bottom: -22px; height: 22px; background: radial-gradient(closest-side, rgba(20,10,15,.28), transparent); filter: blur(4px); }
   .env-flap { z-index: 4; pointer-events: none; height: calc(var(--envW) * 130 / 300); }
@@ -123,7 +121,7 @@
   @keyframes hint { 0%, 100% { opacity: .45; } 25% { opacity: .95; } }
 
   /* ── the letter ── */
-  .letter { position: absolute; z-index: 2; left: 50%; top: 0; width: var(--lw); transform: translate(-50%, var(--letterY)); clip-path: var(--clip, none); filter: drop-shadow(0 10px 22px rgba(20,10,15,.18)) drop-shadow(0 1px 2px rgba(20,10,15,.14)); }
+  .letter { position: absolute; z-index: 2; left: 50%; top: 0; width: var(--lw); transform: translate(-50%, var(--letterY)); clip-path: var(--clip, none); will-change: transform; }
   .sheet {
     position: relative; clip-path: var(--deckle);
     background:
@@ -134,10 +132,12 @@
       var(--paper);
     padding: 0 calc(var(--lw) * .1);
   }
-  .sheet::after { content: ''; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
-    background: radial-gradient(70% 35% at calc(var(--lx) * 100%) 18%, rgba(255,255,255,.45), transparent 70%);
+  .letter::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    box-shadow: 0 10px 26px rgba(20,10,15,.17), 0 1px 3px rgba(20,10,15,.14); }
+  .sheet::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(165deg, rgba(255,255,255,.22), transparent 30%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 1px 0 0 rgba(255,255,255,.35), inset -1px 0 0 rgba(0,0,0,.05); }
-  [data-theme="dark"] .sheet::after { background: radial-gradient(70% 35% at calc(var(--lx) * 100%) 18%, rgba(255,240,210,.12), transparent 70%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+  [data-theme="dark"] .sheet::after { background: linear-gradient(165deg, rgba(255,240,210,.06), transparent 30%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
   [data-theme="dark"] .sheet { background-blend-mode: soft-light, screen, normal, normal, normal; }
 
   .thread { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
@@ -245,10 +245,10 @@
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .35 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>"); }
   .couple img { width: 100%; height: auto; display: block;
     /* printed: ink sits in the paper (the grain shows through) with a hairline keyline */
-    mix-blend-mode: multiply; filter: saturate(.9) contrast(1.02) drop-shadow(.6px 0 0 var(--key)) drop-shadow(-.6px 0 0 var(--key)) drop-shadow(0 .6px 0 var(--key)) drop-shadow(0 -.6px 0 var(--key)); }
+    mix-blend-mode: multiply; filter: saturate(.9) contrast(1.02) drop-shadow(0 0 .7px var(--key)); }
   /* on black card stock: no multiply (black would vanish), a fine gold keyline instead */
   [data-theme="dark"] .couple { --key: rgba(212,174,102,.75); }
-  [data-theme="dark"] .couple img { mix-blend-mode: normal; filter: saturate(.9) brightness(1.05) drop-shadow(.7px 0 0 var(--key)) drop-shadow(-.7px 0 0 var(--key)) drop-shadow(0 .7px 0 var(--key)) drop-shadow(0 -.7px 0 var(--key)); }
+  [data-theme="dark"] .couple img { mix-blend-mode: normal; filter: saturate(.9) brightness(1.05) drop-shadow(0 0 .8px var(--key)); }
   .with { font-style: italic; font-size: calc(var(--tw) * .056); margin-top: 26px; }
   .sign { display: flex; align-items: center; justify-content: center; gap: .3em; font-family: var(--f-caps); font-size: calc(var(--tw) * .05); letter-spacing: .16em; margin-top: 6px; white-space: nowrap; }
   .sign .amp { font-size: 1.5em; letter-spacing: 0; }
@@ -271,7 +271,6 @@
   .mode .rays { stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; transform-origin: 12px 12px; transition: transform .5s, opacity .3s; }
   [data-theme="dark"] .mode .bite { transform: translate(0, 0); }
   [data-theme="dark"] .mode .rays { opacity: 0; transform: rotate(60deg) scale(.6); }
-  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 1ms !important; animation: none !important; } }
 </style>
 </head>
@@ -307,7 +306,7 @@
     <pattern id="laid" width="3" height="2.2" patternUnits="userSpaceOnUse"><line x1="0" y1=".5" x2="3" y2=".5" style="stroke: var(--env-line)" stroke-width=".6" /></pattern>
     <linearGradient id="goldG" x1="0" x2="1" y1="0" y2="1"><stop offset="0" style="stop-color: var(--foil-lo)" /><stop offset=".5" style="stop-color: var(--foil-hi)" /><stop offset="1" style="stop-color: var(--foil-lo)" /></linearGradient>
     <radialGradient id="haloG"><stop offset="0" style="stop-color: var(--foil-hi)" stop-opacity=".55" /><stop offset="1" style="stop-color: var(--foil-hi)" stop-opacity="0" /></radialGradient>
-    <radialGradient id="envSheen" cx=".5" cy=".1" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".55" /><stop offset=".65" stop-color="#fff" stop-opacity="0" /></radialGradient>
+    <radialGradient id="envSheen" cx=".5" cy=".1" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".22" /><stop offset=".65" stop-color="#fff" stop-opacity="0" /></radialGradient>
     <linearGradient id="envG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--env)" /><stop offset="1" style="stop-color: var(--env-2)" /></linearGradient>
     <radialGradient id="waxG" cx=".36" cy=".3" r=".8"><stop offset="0" style="stop-color: var(--wax-hi)" /><stop offset=".45" style="stop-color: var(--wax)" /><stop offset="1" style="stop-color: var(--wax-lo)" /></radialGradient>
     <radialGradient id="fieldG" cx=".5" cy=".42" r=".6"><stop offset="0" style="stop-color: var(--wax)" /><stop offset="1" style="stop-color: var(--wax-lo)" /></radialGradient>
@@ -459,7 +458,7 @@
     <path d="M24 7 Q150 57 276 7" fill="none" stroke="rgba(20,10,5,.2)" stroke-width="4" filter="url(#soft)" vector-effect="non-scaling-stroke" />
     <path d="M0 0 Q150 62 300 0 L300 207 L0 207 Z" fill="url(#envG)" filter="url(#grain)" />
     <path d="M0 0 Q150 62 300 0 L300 207 L0 207 Z" fill="url(#laid)" />
-    <path d="M0 0 Q150 62 300 0 L300 207 L0 207 Z" fill="url(#envSheen)" style="mix-blend-mode: soft-light" />
+    <path d="M0 0 Q150 62 300 0 L300 207 L0 207 Z" fill="url(#envSheen)" />
     <path d="M6 6 Q150 66 294 6" fill="none" stroke="url(#goldG)" stroke-width=".9" vector-effect="non-scaling-stroke" />
     <path d="M0 3 L132 122 M300 3 L168 122" style="stroke: var(--env-crease)" stroke-width=".8" fill="none" vector-effect="non-scaling-stroke" />
     <path d="M.8 3 L132.8 122 M300.8 3 L168.8 122" stroke="rgba(255,255,255,.55)" stroke-width=".6" fill="none" vector-effect="non-scaling-stroke" />
@@ -468,7 +467,7 @@
     <path d="M0 207 Q115 118 150 112 Q185 118 300 207 Z" fill="url(#laid)" />
     <path d="M0 207 Q115 118 150 112 Q185 118 300 207" fill="none" style="stroke: var(--env-crease)" stroke-width=".7" vector-effect="non-scaling-stroke" />
     <path d="M1 207.8 Q115 119 150 113 Q185 119 299 207.8" fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".6" vector-effect="non-scaling-stroke" />
-    <path d="M0 207 Q115 118 150 112 Q185 118 300 207 Z" fill="url(#envSheen)" style="mix-blend-mode: soft-light" />
+    <path d="M0 207 Q115 118 150 112 Q185 118 300 207 Z" fill="url(#envSheen)" />
     <path d="M.3 .3 V206.7 H299.7 V.3" fill="none" stroke="rgba(0,0,0,.14)" stroke-width=".6" vector-effect="non-scaling-stroke" />
     <g transform="translate(262 180)" fill="none" stroke="url(#goldG)" stroke-width=".8" opacity=".9">
       <circle r="15" stroke-dasharray="2 1.6" /><circle r="11.5" />
@@ -482,7 +481,7 @@
     <div class="side side--out"><svg viewBox="0 0 300 130" preserveAspectRatio="none">
       <path d="M0 0 L139 123 Q150 132 161 123 L300 0 Z" fill="url(#envG)" filter="url(#grain)" />
       <path d="M0 0 L139 123 Q150 132 161 123 L300 0 Z" fill="url(#laid)" />
-      <path d="M0 0 L139 123 Q150 132 161 123 L300 0 Z" fill="url(#envSheen)" style="mix-blend-mode: soft-light" />
+      <path d="M0 0 L139 123 Q150 132 161 123 L300 0 Z" fill="url(#envSheen)" />
       <path d="M1.2 .6 L139.6 122.2 Q150 130.4 160.4 122.2 L298.8 .6" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".6" vector-effect="non-scaling-stroke" />
       <path d="M0 0 L139 123 Q150 132 161 123 L300 0" fill="none" style="stroke: var(--env-crease)" stroke-width=".8" vector-effect="non-scaling-stroke" />
       <path d="M14 3 L144 117 Q150 122 156 117 L286 3" fill="none" stroke="url(#goldG)" stroke-width="1.1" vector-effect="non-scaling-stroke" />
@@ -536,6 +535,8 @@
     c.setAttribute('cx', 50 + Math.cos(a) * 31); c.setAttribute('cy', 50 + Math.sin(a) * 31); c.setAttribute('r', .75);
     beads.append(c);
   }
+  const envEls = [...document.querySelectorAll('.env')];
+  let secPos = [];
   const set = (k, v) => root.style.setProperty(k, typeof v === 'number' ? v + 'px' : v);
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const ease = (t) => 1 - Math.pow(1 - t, 4);
@@ -567,6 +568,8 @@
     for (let x = 0; x <= lw; x += 5) pts.push(`${x.toFixed(1)}px ${(Math.random() * 2.2).toFixed(1)}px`);
     set('--deckle', `polygon(${pts.join(',')}, 100% 100%, 0 100%)`);
     buildThread();
+    secPos = sections.map((s) => ({ top: s.offsetTop, h: s.offsetHeight }));
+    letterH = letter.offsetHeight;
     apply();
   }
 
@@ -635,36 +638,43 @@
     routePin.style.opacity = pin;
     routePin.style.transform = `scale(${(.4 + .6 * pin).toFixed(3)})`;
   }
+  let letterScreenTop = 0;
+  const styleCache = new Map();
+  const setOnce = (el, k, v) => { const key = el.id + k; if (styleCache.get(key) !== v) { styleCache.set(key, v); k[0] === '-' ? el.style.setProperty(k, v) : (el.style[k] = v); } };
   function flow() {
     const vh = G.vh, q = [];
     for (const s of sections) {
       const f = s.querySelector('.flow');
       if (state !== 'open') { f.style.opacity = ''; f.style.transform = ''; q.push(s.id === 's1' ? 1 : 0); continue; }
-      const r = s.getBoundingClientRect();
-      const d = (r.top + Math.min(r.height, vh) / 2 - vh / 2) / vh;
+      const sp = secPos[sections.indexOf(s)], top = letterScreenTop + sp.top;
+      const d = (top + Math.min(sp.h, vh) / 2 - vh / 2) / vh;
       const k = clamp(1 - (Math.abs(d) - .16) * 2.4);
       const enter = clamp((.62 - d) / .62);
-      f.style.opacity = (.15 + .85 * k).toFixed(3);
-      f.style.transform = `translateY(${(d * 46).toFixed(1)}px) scale(${(.975 + .025 * k).toFixed(4)})`;
-      s.style.setProperty('--grow', (.9 + .1 * k).toFixed(4));
-      s.style.setProperty('--w', clamp(enter * 1.25).toFixed(3));
-      s.style.setProperty('--q', enter.toFixed(3));
+      f.style.opacity = (.15 + .85 * k).toFixed(2);
+      f.style.transform = `translateY(${(d * 46).toFixed(1)}px) scale(${(.975 + .025 * k).toFixed(3)})`;
+      setOnce(s, '--grow', (.9 + .1 * k).toFixed(2));
+      setOnce(s, '--w', clamp(enter * 1.25).toFixed(2));
+      setOnce(s, '--q', enter.toFixed(2));
       q.push(enter);
     }
     scenes(q[1], q[2]);
   }
 
+  let letterH = 0;
   function apply() {
     const { envH, closedY, openY, top, vh } = G;
     const sy = state === 'open' ? scrollY + fake : 0;
     const envY = closedY + (openY - closedY) * e + sy * 1.15;
     const letterY = (closedY + 8) + (top - closedY - 8) * Math.min(1, e * 1.04) - fake;
-    set('--envY', envY); set('--letterY', letterY);
-    drawThread(vh - (letterY - (state === 'open' ? scrollY : 0)));
+    const envT = `translateY(${envY.toFixed(1)}px)`;
+    for (const el of envEls) el.style.transform = envT;
+    letter.style.transform = `translate(-50%, ${letterY.toFixed(1)}px)`;
+    letterScreenTop = letterY - (state === 'open' ? scrollY : 0);
+    drawThread(vh - letterScreenTop);
     flow();
-    if (state === 'open') { set('--clip', 'none'); return; }
+    if (state === 'open') { letter.style.clipPath = 'none'; return; }
     const visible = Math.max(0, envY + envH * .9 - letterY); // stop short of the bottom edge so nothing peeks out
-    set('--clip', `inset(0 0 ${Math.max(0, letter.offsetHeight - visible)}px 0)`);
+    letter.style.clipPath = `inset(0 0 ${Math.max(0, letterH - visible).toFixed(1)}px 0)`;
   }
 
   // ── sounds: soft paper and wax, synthesized with Web Audio; the context starts on the first tap ──
@@ -791,29 +801,39 @@
   let target = .5, lx = .5, t0 = performance.now();
   addEventListener('pointermove', (ev) => { target = ev.clientX / innerWidth; });
   addEventListener('deviceorientation', (ev) => { if (ev.gamma != null) target = clamp(.5 + ev.gamma / 50); });
-  setInterval(() => {
-    const t = (performance.now() - t0) / 1000;
-    const drift = Math.sin(t * .45) * .12 + Math.sin((scrollY + fake) / 260) * .1;
-    lx += (clamp(target + drift) - lx) * .2;
-    set('--lx', lx.toFixed(3));
+  let lastScroll = 0, shownLx = '', starBoxes = null;
+  addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
+  const lightLoop = (now) => {
+    requestAnimationFrame(lightLoop);
+    if (document.hidden) return;
+    const t = (now - t0) / 1000;
+    const y = scrollY + fake; vel = vel * .7 + ((y - lastY) / .016) * .3; lastY = y;
+    // While scrolling, leave the foil alone: only the light trails move.
+    if (now - lastScroll > 180) {
+      lx += (clamp(target + Math.sin(t * .35) * .1) - lx) * .08;
+      const q = (Math.round(lx * 200) / 200).toFixed(3);
+      if (q !== shownLx) { shownLx = q; set('--lx', q); }
+    }
     acryl?.setAttribute('gradientTransform', `translate(${((lx - .5) * 170).toFixed(1)} 0)`);
     // The wax is lit from wherever the light is.
-    const az = Math.round(200 + lx * 90);
-    envSheen.setAttribute('cx', lx.toFixed(3));
-    if (az !== lastAz) { dl.setAttribute('azimuth', az); sl.setAttribute('azimuth', az); lastAz = az; }
+    // Relighting the wax is costly, so it happens only while the seal is on screen, in 3° steps.
+    const az = Math.round((200 + lx * 90) / 3) * 3;
+    if (state === 'sealed' && az !== lastAz) { dl.setAttribute('azimuth', az); sl.setAttribute('azimuth', az); envSheen.setAttribute('cx', shownLx); lastAz = az; }
     // Light trail: the faster you scroll, the longer the streak behind the brightest stars; it fades when you stop.
-    const y = scrollY + fake; vel = vel * .55 + ((y - lastY) / .05) * .45; lastY = y;
-    const len = clamp(Math.abs(vel) / 900) * 18, dir = Math.sign(vel) || 1;
+    if (state !== 'open') return;
+    starBoxes ??= trails.map((tr) => tr.s.getBBox());
+    const len = clamp(Math.abs(vel) / 1400) * 18, dir = Math.sign(vel) || 1;
     for (const tr of trails) {
-      if (!tr.s.classList.contains('on') || len < .4) { tr.p.setAttribute('d', ''); continue; }
-      const b = tr.s.getBBox(), cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+      if (!tr.s.classList.contains('on') || len < .4) { if (tr.d) { tr.p.setAttribute('d', ''); tr.d = ''; } continue; }
+      tr.d = 1; const b = starBoxes[trails.indexOf(tr)], cx = b.x + b.width / 2, cy = b.y + b.height / 2;
       const ex = cx - len * .28, ey = cy + len * dir;
       tr.p.setAttribute('d', `M${cx.toFixed(1)} ${cy.toFixed(1)} L${ex.toFixed(1)} ${ey.toFixed(1)}`);
       tr.g.setAttribute('x1', cx); tr.g.setAttribute('y1', cy); tr.g.setAttribute('x2', ex); tr.g.setAttribute('y2', ey);
       tr.p.setAttribute('stroke', `url(#${tr.g.id})`);
       tr.p.style.opacity = clamp(Math.abs(vel) / 700).toFixed(2);
     }
-  }, 50);
+  };
+  requestAnimationFrame(lightLoop);
 
   // ── light / dark, remembered ──
   const modeBtn = document.getElementById('mode');
@@ -825,7 +845,7 @@
   modeBtn.addEventListener('click', () => {
     sfx.unlock(); sfx.play('tap');
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-    if (document.startViewTransition) document.startViewTransition(() => setTheme(next)); else setTheme(next);
+    setTheme(next);
   });
   const q = new URLSearchParams(location.search);
   let saved = null; try { saved = localStorage.getItem('vm-theme'); } catch {}
