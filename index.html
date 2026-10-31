@@ -56,7 +56,6 @@
 
   * { box-sizing: border-box; margin: 0; }
   html { background: var(--bg1); }
-  html.is-live { scroll-snap-type: y proximity; }
   body {
     min-height: 100vh; overflow: hidden; position: relative;
     background: radial-gradient(70% 40% at 0% 0%, var(--bg2) 0%, transparent 70%), radial-gradient(60% 35% at 100% 100%, var(--bg3) 0%, transparent 70%), var(--bg1);
@@ -79,7 +78,7 @@
   }
 
   /* ── envelope ── */
-  .env { position: fixed; left: calc(50% - var(--envW) / 2); top: 0; width: var(--envW); height: var(--envH); transform: translateY(var(--envY)); will-change: transform; }
+  .env { transition: translate .7s cubic-bezier(.3,.7,.3,1); position: fixed; left: calc(50% - var(--envW) / 2); top: 0; width: var(--envW); height: var(--envH); transform: translateY(var(--envY)); will-change: transform; }
   .env > svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .env-back { z-index: 1; border-radius: 3px; overflow: hidden; }
   /* inside of the pocket: tissue grain, a shadow falling towards the mouth, and a sheen that follows the light */
@@ -141,6 +140,9 @@
   [data-theme="dark"] .sheet { background-blend-mode: soft-light, screen, normal, normal, normal; }
 
   .thread { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .is-open.is-scrolled .env { translate: 0 calc(100vh - var(--closedY) + 40px); }
+  .thread { will-change: transform; transition: opacity .25s; }
+  .thread path { transition: stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1); }
   .thread path { fill: none; stroke: var(--foil-mid); stroke-linecap: round; stroke-linejoin: round; }
   .thread .t1 { stroke-width: 1.1; opacity: .85; }
   .thread .t2 { stroke-width: .6; opacity: .45; }
@@ -148,7 +150,14 @@
   .knot { fill: var(--paper); stroke: var(--foil-mid); stroke-width: 1; transform-box: fill-box; transform-origin: center; transform: rotate(45deg) scale(.5); opacity: 0; transition: transform .45s cubic-bezier(.3,1.4,.4,1), fill .3s, opacity .3s; }
   .knot.on { fill: var(--foil-mid); transform: rotate(45deg) scale(1); opacity: 1; }
 
-  section { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; scroll-snap-align: start; scroll-margin-top: 14px; }
+  section { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  @property --q { syntax: '<number>'; inherits: true; initial-value: 1; }
+  @property --w { syntax: '<number>'; inherits: true; initial-value: 1; }
+  @property --grow { syntax: '<number>'; inherits: true; initial-value: 1; }
+  .is-revealed section { --q: 0; --w: 0; --grow: .9; transition: --q 1.1s ease, --w 1.5s cubic-bezier(.4,0,.2,1) .25s, --grow 1s cubic-bezier(.2,.9,.25,1); }
+  .is-revealed section.in { --q: 1; --w: 1; --grow: 1; }
+  .is-revealed .flow { opacity: .15; transform: translateY(26px) scale(.98); transition: opacity .8s ease, transform 1s cubic-bezier(.2,.9,.25,1); }
+  .is-revealed section.in .flow { opacity: 1; transform: none; }
   .flow { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; will-change: transform, opacity; }
   .p1 { --tw: var(--tw1); height: var(--p1); padding: 64px 0 calc(var(--envH) * .2 + 54px); }
   .p1 .flow { height: 100%; justify-content: space-between; }
@@ -596,20 +605,18 @@
     bow.setAttribute('transform', `translate(${w / 2} ${h - 15})`); // knot between the two threads, tails inside the sheet
     T.bow = [...bow.querySelectorAll('path')].map((p) => { const len = p.getTotalLength(); p.style.strokeDasharray = `${len} ${len}`; return { el: p, len }; });
   }
+  let reachedMax = 0;
   function drawThread(reached) {
     const { w, h } = T;
     for (const p of T.paths) {
-      const y = (reached - p.lag) * threadK;
-      const across = (w / 2 - p.ins) * clamp(threadK * 3);
-      const down = clamp(y - p.ins, 0, h - 2 * p.ins);
-      const back = y >= h - p.ins ? w / 2 - p.ins : 0;
-      p.el.style.strokeDashoffset = p.len - Math.min(p.len, across + down + back);
+      const y = reached - p.lag;
+      const drawn = (w / 2 - p.ins) + clamp(y - p.ins, 0, h - 2 * p.ins) + (y >= h - p.ins ? w / 2 - p.ins : 0);
+      p.el.style.strokeDashoffset = threadK ? p.len - Math.min(p.len, drawn) : p.len;
     }
-    for (const k of T.knots) k.el.classList.toggle('on', threadK > .9 && reached > k.y + 40);
-    const b = clamp((reached * threadK - (h - 30)) / 60); // complete by the time the letter's foot is in view
+    for (const k of T.knots) k.el.classList.toggle('on', threadK > 0 && reached > k.y + 40);
+    const b = threadK && reached >= h - 40 ? 1 : 0;
     for (const p of T.bow) p.el.style.strokeDashoffset = p.len * (1 - b);
   }
-
   // ── scroll-linked scenes ──
   const s2 = document.getElementById('s2');
   const sun = document.getElementById('sun'), moon = document.getElementById('moon');
@@ -638,45 +645,43 @@
     routePin.style.opacity = pin;
     routePin.style.transform = `scale(${(.4 + .6 * pin).toFixed(3)})`;
   }
-  let letterScreenTop = 0;
-  const styleCache = new Map();
-  const setOnce = (el, k, v) => { const key = el.id + k; if (styleCache.get(key) !== v) { styleCache.set(key, v); k[0] === '-' ? el.style.setProperty(k, v) : (el.style[k] = v); } };
-  function flow() {
-    const vh = G.vh, q = [];
-    for (const s of sections) {
-      const f = s.querySelector('.flow');
-      if (state !== 'open') { f.style.opacity = ''; f.style.transform = ''; q.push(s.id === 's1' ? 1 : 0); continue; }
-      const sp = secPos[sections.indexOf(s)], top = letterScreenTop + sp.top;
-      const d = (top + Math.min(sp.h, vh) / 2 - vh / 2) / vh;
-      const k = clamp(1 - (Math.abs(d) - .16) * 2.4);
-      const enter = clamp((.62 - d) / .62);
-      f.style.opacity = (.15 + .85 * k).toFixed(2);
-      f.style.transform = `translateY(${(d * 46).toFixed(1)}px) scale(${(.975 + .025 * k).toFixed(3)})`;
-      setOnce(s, '--grow', (.9 + .1 * k).toFixed(2));
-      setOnce(s, '--w', clamp(enter * 1.25).toFixed(2));
-      setOnce(s, '--q', enter.toFixed(2));
-      q.push(enter);
-    }
-    scenes(q[1], q[2]);
+  const sceneQ = [0, 0], sceneTok = [0, 0];
+  const easeS = (t) => (t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+  function playScene(i, to) {  // 0: dusk, 1: route
+    const from = sceneQ[i], tok = ++sceneTok[i], ms = Math.abs(to - from) * (i ? 1500 : 2400);
+    if (ms < 16) return;
+    tween(ms, easeS, (v) => { if (tok !== sceneTok[i]) return; sceneQ[i] = from + (to - from) * v; scenes(sceneQ[0], sceneQ[1]); });
   }
-
+  // A section counts as arrived while it crosses the middle band of the screen (35%–65% down).
+  const inNow = sections.map(() => false);
+  function arrivals() {
+    if (state !== 'open') return;
+    const vh = innerHeight, y0 = scrollY + vh * .35, y1 = scrollY + vh * .65, base = G.top;
+    sections.forEach((s, i) => {
+      const top = base + secPos[i].top, on = top < y1 && top + secPos[i].h > y0;
+      if (on === inNow[i]) return;
+      inNow[i] = on;
+      s.classList.toggle('in', on);
+      if (on) {
+        reachedMax = Math.max(reachedMax, i === sections.length - 1 ? T.h : secPos[i].top + secPos[i].h);
+        drawThread(reachedMax);
+      }
+      if (i === 1) playScene(0, on ? 1 : 0);
+      if (i === 2) playScene(1, on ? 1 : 0);
+    });
+  }
   let letterH = 0;
   function apply() {
-    const { envH, closedY, openY, top, vh } = G;
-    const sy = state === 'open' ? scrollY + fake : 0;
-    const envY = closedY + (openY - closedY) * e + sy * 1.15;
-    const letterY = (closedY + 8) + (top - closedY - 8) * Math.min(1, e * 1.04) - fake;
+    const { envH, closedY, openY, top } = G;
+    const envY = closedY + (openY - closedY) * e;
+    const letterY = (closedY + 8) + (top - closedY - 8) * Math.min(1, e * 1.04);
     const envT = `translateY(${envY.toFixed(1)}px)`;
     for (const el of envEls) el.style.transform = envT;
     letter.style.transform = `translate(-50%, ${letterY.toFixed(1)}px)`;
-    letterScreenTop = letterY - (state === 'open' ? scrollY : 0);
-    drawThread(vh - letterScreenTop);
-    flow();
     if (state === 'open') { letter.style.clipPath = 'none'; return; }
     const visible = Math.max(0, envY + envH * .9 - letterY); // stop short of the bottom edge so nothing peeks out
     letter.style.clipPath = `inset(0 0 ${Math.max(0, letterH - visible).toFixed(1)}px 0)`;
   }
-
   // ── sounds: soft paper and wax, synthesized with Web Audio; the context starts on the first tap ──
   const sfx = (() => {
     let ctx = null, out = null;
@@ -760,9 +765,11 @@
     root.classList.add('is-open');
     await tween(900, ease, (v) => { e = v; apply(); });
     state = 'open';
+    sections[0].classList.add('in');
     root.classList.add('is-live', 'is-revealed');
     document.body.style.height = (G.top + letter.offsetHeight + 40) + 'px';
-    await tween(1100, ease, (v) => { threadK = v; apply(); });
+    threadK = 1; reachedMax = secPos[0].top + secPos[0].h; drawThread(reachedMax);
+    inNow.fill(false); inNow[0] = true; arrivals();
   }
 
   async function close() {
@@ -770,10 +777,16 @@
     state = 'closing-scroll';
     sfx.unlock();
     if (scrollY > 2) { scrollTo({ top: 0, behavior: 'smooth' }); for (let i = 0; i < 60 && scrollY > 2; i++) await later(30); }
-    await tween(260, (t) => t, (v) => { threadK = 1 - v; drawThread(G.vh); });
+    thread.style.opacity = 0;
+    await later(260);
     root.classList.remove('is-revealed', 'is-live', 'is-scrolled');
     document.body.style.height = ''; scrollTo(0, 0);
-    state = 'closing'; flow();
+    state = 'closing';
+    for (const s of sections) s.classList.remove('in');
+    inNow.fill(false);
+    sceneTok[0]++; sceneTok[1]++; sceneQ[0] = sceneQ[1] = 0; scenes(0, 0);
+    threadK = 0; reachedMax = 0; drawThread(0);
+    setTimeout(() => { thread.style.opacity = ''; }, 400);
     root.classList.add('is-closing');
     sfx.play('close');
     await tween(650, easeIO, (v) => { e = 1 - v; apply(); });
@@ -787,7 +800,7 @@
   addEventListener('scroll', () => {
     if (state !== 'open' || ticking) return;
     ticking = true;
-    requestAnimationFrame(() => { ticking = false; apply(); root.classList.toggle('is-scrolled', scrollY > 20); });
+    requestAnimationFrame(() => { ticking = false; root.classList.toggle('is-scrolled', scrollY > 20); arrivals(); });
   }, { passive: true });
   addEventListener('resize', () => { layout(); if (state === 'open') document.body.style.height = (G.top + letter.offsetHeight + 40) + 'px'; });
 
@@ -801,16 +814,16 @@
   let target = .5, lx = .5, t0 = performance.now();
   addEventListener('pointermove', (ev) => { target = ev.clientX / innerWidth; });
   addEventListener('deviceorientation', (ev) => { if (ev.gamma != null) target = clamp(.5 + ev.gamma / 50); });
-  let lastScroll = 0, shownLx = '', starBoxes = null;
+  let lastScroll = 0, shownLx = '';
+  const hover = matchMedia('(hover: hover)').matches;
   addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
   const lightLoop = (now) => {
     requestAnimationFrame(lightLoop);
     if (document.hidden) return;
     const t = (now - t0) / 1000;
-    const y = scrollY + fake; vel = vel * .7 + ((y - lastY) / .016) * .3; lastY = y;
-    // While scrolling, leave the foil alone: only the light trails move.
+    // While scrolling, leave the foil alone.
     if (now - lastScroll > 180) {
-      lx += (clamp(target + Math.sin(t * .35) * .1) - lx) * .08;
+      lx += (clamp(target + (hover ? Math.sin(t * .35) * .1 : 0)) - lx) * .08;
       const q = (Math.round(lx * 200) / 200).toFixed(3);
       if (q !== shownLx) { shownLx = q; set('--lx', q); }
     }
@@ -819,19 +832,6 @@
     // Relighting the wax is costly, so it happens only while the seal is on screen, in 3° steps.
     const az = Math.round((200 + lx * 90) / 3) * 3;
     if (state === 'sealed' && az !== lastAz) { dl.setAttribute('azimuth', az); sl.setAttribute('azimuth', az); envSheen.setAttribute('cx', shownLx); lastAz = az; }
-    // Light trail: the faster you scroll, the longer the streak behind the brightest stars; it fades when you stop.
-    if (state !== 'open') return;
-    starBoxes ??= trails.map((tr) => tr.s.getBBox());
-    const len = clamp(Math.abs(vel) / 1400) * 18, dir = Math.sign(vel) || 1;
-    for (const tr of trails) {
-      if (!tr.s.classList.contains('on') || len < .4) { if (tr.d) { tr.p.setAttribute('d', ''); tr.d = ''; } continue; }
-      tr.d = 1; const b = starBoxes[trails.indexOf(tr)], cx = b.x + b.width / 2, cy = b.y + b.height / 2;
-      const ex = cx - len * .28, ey = cy + len * dir;
-      tr.p.setAttribute('d', `M${cx.toFixed(1)} ${cy.toFixed(1)} L${ex.toFixed(1)} ${ey.toFixed(1)}`);
-      tr.g.setAttribute('x1', cx); tr.g.setAttribute('y1', cy); tr.g.setAttribute('x2', ex); tr.g.setAttribute('y2', ey);
-      tr.p.setAttribute('stroke', `url(#${tr.g.id})`);
-      tr.p.style.opacity = clamp(Math.abs(vel) / 700).toFixed(2);
-    }
   };
   requestAnimationFrame(lightLoop);
 
