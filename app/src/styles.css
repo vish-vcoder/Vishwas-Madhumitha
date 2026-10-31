@@ -344,3 +344,36 @@ html:not(.ready) body { visibility: hidden; }
 }
 
 .page:not(.in) .dusk :is(.sun, .moon, .star, .const), .page:not(.in) .route :is(.reveal, .pin), .p2:not(.in) .wash i, .p4:not(.in) :is(.rule-bot, .bow path) { transition-delay: .7s; transition-duration: .01s; }`n.bow path { stroke-dasharray: 1 2; }
+
+/* Language: a chip in the bottom-left corner opens a small menu. */
+.lang { left: 16px; bottom: max(16px, env(safe-area-inset-bottom)); font-family: var(--f-serif); font-size: 15px; line-height: 1; }
+.lang-menu { position: fixed; z-index: 9; left: 16px; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 50px); display: flex; flex-direction: column; padding: 6px;
+  border-radius: 14px; background: var(--chip); border: 1px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,.22); animation: menu-in .2s var(--ease-out); }
+.lang-menu[hidden] { display: none; }
+.lang-menu button { padding: 9px 16px; border-radius: 9px; text-align: left; font-size: 15px; color: var(--ink); white-space: nowrap; }
+.lang-menu button[aria-checked="true"] { color: var(--foil-mid); }
+.lang-menu button[aria-checked="true"]::before { content: '\2022'; margin-right: 8px; }
+.lang-menu [lang="kn"] { font-family: 'Noto Serif Kannada', serif; }
+.lang-menu [lang="ta"] { font-family: 'Noto Serif Tamil', serif; }
+@keyframes menu-in { from { opacity: 0; translate: 0 6px; } }
+.invite.after { margin-top: 8px; }
+
+/* Kannada and Tamil: their own serif, no capitals or wide tracking, slightly smaller display sizes. */
+html:is([lang="kn"], [lang="ta"]) { --f-caps: var(--f-indic); --f-serif: var(--f-indic); }
+html[lang="kn"] { --f-indic: 'Noto Serif Kannada', 'EB Garamond', serif; }
+html[lang="ta"] { --f-indic: 'Noto Serif Tamil', 'EB Garamond', serif; }
+html:is([lang="kn"], [lang="ta"]) :is(.names, .title, .venue, .label, .side, .count, .pill, .putback, .cue, .hint, .sign, .nm) { letter-spacing: .02em; text-transform: none; padding-left: 0; }
+html:is([lang="kn"], [lang="ta"]) .names { font-size: calc(var(--tw) * .064); line-height: 1.5; }
+html:is([lang="kn"], [lang="ta"]) .title { font-size: calc(var(--tw) * .06); line-height: 1.5; }
+html:is([lang="kn"], [lang="ta"]) .venue { font-size: calc(var(--tw) * .05); }
+html:is([lang="kn"], [lang="ta"]) :is(.invite, .greet, .time, .with) { font-style: normal; }
+html:is([lang="kn"], [lang="ta"]) .invite { font-size: calc(var(--tw) * .042); line-height: 1.6; }
+html:is([lang="kn"], [lang="ta"]) :is(.label, .side, .count, .cue, .hint) { font-size: 12px; }
+html:is([lang="kn"], [lang="ta"]) .pill { font-size: 12.5px; }
+html:is([lang="kn"], [lang="ta"]) .sign { font-size: calc(var(--tw) * .046); }
+html[lang="ta"] .names { font-size: calc(var(--tw) * .056); }
+html[lang="ta"] :is(.title) { font-size: calc(var(--tw) * .052); }
+/* The address stays in English, so it keeps the English serif in every language. */
+html:is([lang="kn"], [lang="ta"]) .addr { font-family: 'EB Garamond', Georgia, serif; }
+html:is([lang="kn"], [lang="ta"]) .invite.after { font-size: calc(var(--tw) * .038); margin-top: 6px; }
+html:is([lang="kn"], [lang="ta"]) .p1 .flow { padding-bottom: 10px; }

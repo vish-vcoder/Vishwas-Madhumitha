@@ -3,7 +3,10 @@ import '@fontsource/cinzel/500.css';
 import '@fontsource/eb-garamond/400.css';
 import '@fontsource/eb-garamond/400-italic.css';
 import './styles.css';
-import { INVITE, countdownText } from './content';
+import { INVITE } from './content';
+import { LANGS, STRINGS, type Lang } from './i18n';
+import '@fontsource/noto-serif-kannada/400.css';
+import '@fontsource/noto-serif-tamil/400.css';
 import { letterHTML } from './letter';
 import { createSound } from './sound';
 
@@ -20,7 +23,7 @@ const params = new URLSearchParams(location.search);
 const guest = (params.get('to') || '').replace(/[^\p{L}\p{M} .'&-]/gu, '').trim().slice(0, 40) || null;
 
 const scroller = $('#scroller');
-scroller.innerHTML = letterHTML(guest);
+scroller.innerHTML = letterHTML();
 const letter = $('#letter');
 const pocket = $('#pocket');
 const pages = [...document.querySelectorAll<HTMLElement>('.page')];
@@ -31,6 +34,9 @@ const sealTop = $('.seal-top');
 const sealBot = $('.seal-bot');
 const dots = $('#dots');
 const sound = createSound(INVITE.sounds);
+// The chosen language (set below); other controls read their labels from it.
+let lang: Lang = 'en';
+const S = () => STRINGS[lang];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const D = (ms: number) => (reduced ? 1 : ms);
 const easeOut = 'cubic-bezier(.22,1,.36,1)';
@@ -241,19 +247,64 @@ if (matchMedia('(hover: hover)').matches) {
 const modeBtn = $('#mode'), soundBtn = $('#sound');
 function setTheme(t: 'light' | 'dark') {
   root.dataset.theme = t;
-  modeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to the ivory card' : 'Switch to the black card');
+  modeBtn.setAttribute('aria-label', t === 'dark' ? S().a11y.toIvory : S().a11y.toBlack);
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', t === 'dark' ? '#141317' : '#f6ebec');
   try { localStorage.setItem('vm-theme', t); } catch { /* storage blocked */ }
 }
 setTheme(root.dataset.theme === 'light' ? 'light' : 'dark');
 modeBtn.addEventListener('click', () => { sound.unlock(); sound.play('tap'); setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'); });
-const showSound = () => { soundBtn.setAttribute('aria-pressed', String(sound.muted)); soundBtn.setAttribute('aria-label', sound.muted ? 'Turn sounds on' : 'Mute sounds'); };
+const showSound = () => { soundBtn.setAttribute('aria-pressed', String(sound.muted)); soundBtn.setAttribute('aria-label', sound.muted ? S().a11y.unmute : S().a11y.mute); };
 showSound();
 soundBtn.addEventListener('click', () => { sound.unlock(); sound.setMuted(!sound.muted); showSound(); sound.play('tap'); });
 
 // ── details ──
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: INVITE.date.timeZone }).format(new Date());
-$('#count').textContent = countdownText(Math.round((Date.parse(INVITE.date.iso) - Date.parse(today)) / 864e5));
+const daysLeft = Math.round((Date.parse(INVITE.date.iso) - Date.parse(today)) / 864e5);
+
+// ── language: every [data-t] spot is filled from the chosen language ──
+const langBtn = $('#lang'), langMenu = $('#langMenu');
+langMenu.innerHTML = LANGS.map((l) => `<button type="button" role="menuitemradio" data-lang="${l.id}" lang="${l.id}">${l.label}</button>`).join('');
+function setLang(l: Lang) {
+  lang = l;
+  const s = S();
+  root.lang = l;
+  const text: Record<string, string> = {
+    greeting: guest ? s.greeting(guest) : '\u00a0',
+    first: s.first, second: s.second, title: s.title, after: s.after, cue: s.cue, hint: s.hint,
+    dateLabel: s.dateLabel, weekday: s.weekday, month: s.month, time: s.time, addToCalendar: s.addToCalendar,
+    venueLabel: s.venueLabel, venueName: s.venueName, directions: s.directions, openInMaps: s.openInMaps,
+    withLove: s.withLove, putBack: s.putBack,
+  };
+  document.querySelectorAll<HTMLElement>('[data-t]').forEach((el) => {
+    const k = el.dataset.t!;
+    if (k === 'before') el.innerHTML = s.before.map((x) => x.replace(/[&<>]/g, (c) => `&#${c.charCodeAt(0)};`)).join('<br />');
+    else if (k in text) el.textContent = text[k];
+  });
+  $('#count').textContent = s.countdown(daysLeft);
+  $('.names').setAttribute('aria-label', `${s.first} & ${s.second}`);
+  $('#seal').setAttribute('aria-label', s.a11y.seal);
+  $('#close').setAttribute('aria-label', s.a11y.close);
+  dots.setAttribute('aria-label', s.a11y.pages);
+  langBtn.setAttribute('aria-label', s.a11y.language);
+  $('#langNow').textContent = LANGS.find((x) => x.id === l)!.short;
+  langMenu.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.lang === l)));
+  setTheme(root.dataset.theme === 'light' ? 'light' : 'dark');
+  showSound();
+  try { localStorage.setItem('vm-lang', l); } catch { /* storage blocked */ }
+  layout();
+}
+const toggleMenu = (open = langMenu.hidden) => { langMenu.hidden = !open; langBtn.setAttribute('aria-expanded', String(open)); };
+langBtn.addEventListener('click', (e) => { e.stopPropagation(); sound.unlock(); sound.play('tap'); toggleMenu(); });
+langMenu.addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLElement>('[data-lang]');
+  if (!b) return;
+  setLang(b.dataset.lang as Lang);
+  toggleMenu(false);
+});
+addEventListener('click', () => { if (!langMenu.hidden) toggleMenu(false); });
+let savedLang: string | null = null;
+try { savedLang = params.get('lang') || localStorage.getItem('vm-lang'); } catch { /* storage blocked */ }
+setLang(LANGS.some((l) => l.id === savedLang) ? (savedLang as Lang) : 'en');
 const apple = /iPhone|iPad|Macintosh/.test(navigator.userAgent);
 $<HTMLAnchorElement>('#calBtn').href = apple ? INVITE.date.icsFile : 'https://calendar.google.com/calendar/render?' + new URLSearchParams({
   action: 'TEMPLATE', text: INVITE.date.calendarTitle, dates: `${INVITE.date.startUtc}/${INVITE.date.endUtc}`,

@@ -43,11 +43,13 @@
     <div class="specks" id="specks" aria-hidden="true"></div>
   </div>
 
-  <p class="hint" aria-hidden="true">Tap the seal</p>
+  <p class="hint" aria-hidden="true" data-t="hint"></p>
   <nav class="dots" id="dots" aria-label="Pages"></nav>
   <button class="chip close" id="close" type="button" aria-label="Put the invitation back">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
   </button>
+  <button class="chip lang" id="lang" type="button" aria-haspopup="true" aria-expanded="false"><span class="lang-now" id="langNow"></span></button>
+  <div class="lang-menu" id="langMenu" role="menu" hidden></div>
   <button class="chip sound" id="sound" type="button" aria-label="Mute sounds" aria-pressed="false">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" /><path class="on" d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.5 7.5 0 0 1 0 10.4" /><path class="off" d="M15.5 9.5l5 5M20.5 9.5l-5 5" /></svg>
   </button>
