@@ -31,7 +31,7 @@ export function letterHTML(guest: string | null): string {
     <div class="flow">
       <p class="greet ink soft">${guest ? esc(INVITE.greeting(guest)) : '&nbsp;'}</p>
       <div class="names-wrap">
-        <svg class="sprigs" viewBox="0 0 300 200" aria-hidden="true"><g>${sprig}</g><g transform="translate(300 0) scale(-1 1)">${sprig}</g></svg>
+        <svg class="sprigs" viewBox="0 0 300 200" aria-hidden="true"><g>${sprig}</g><g transform="translate(300 0) scale(-1 1)">${sprig}</g><path class="tie" pathLength="1" d="M128 192 C138 193 144 195 150 196 C156 195 162 193 172 192 M150 196 C143 189 134 189 137 194 C140 199 147 198 150 196 C153 198 160 199 163 194 C166 189 157 189 150 196 M150 196 C147 201 144 205 140 208 M150 196 C153 201 156 205 160 208" /></svg>
         <h1 class="names"><span class="nm foil">${esc(n.first)}</span>${amp}<span class="nm foil">${esc(n.second)}</span></h1>
       </div>
       <div class="invite-block">
