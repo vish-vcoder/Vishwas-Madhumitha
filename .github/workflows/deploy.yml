@@ -1,4 +1,6 @@
-# Publishes the invite to GitHub Pages on every push to main. The site is plain files, so nothing is built.
+# Publishes the invite to GitHub Pages on every push to main.
+# The current invite is the plain files at the repository root (served at /).
+# The rebuilt invite in app/ is built and served at /next/ as a preview until it replaces the root.
 # Pages must be set to "GitHub Actions" (Settings → Pages → Source).
 name: Publish invite
 
@@ -24,9 +26,22 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Build the preview
+        working-directory: app
+        run: npm ci && npm run build
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          cp index.html couple.webp og-image.jpg favicon.svg apple-touch-icon.png icon-192.png icon-512.png manifest.webmanifest reception.ics .nojekyll _site/
+          cp -r app/dist _site/next
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

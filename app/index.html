@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Vishwas &amp; Madhumitha · Reception Party</title>
+<meta name="description" content="You are warmly invited to the Reception Party of Vishwas &amp; Madhumitha · Sunday, 29 November 2026, 6 PM onwards · Subz Banquet Hall, Bengaluru." />
+<meta name="theme-color" content="#141317" />
+<meta name="robots" content="noindex, nofollow" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Vishwas &amp; Madhumitha · Reception Party" />
+<meta property="og:description" content="Sunday, 29 November 2026 · 6 PM onwards · Subz Banquet Hall, Bengaluru. Tap the seal to open your invitation." />
+<meta property="og:image" content="og-image.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="V &amp; M" />
+<script>
+  // Pick the theme before anything paints, so there is no flash of the other one.
+  try { const t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('vm-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}
+</script>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <!-- The envelope is split into layers so the letter can sit between them. -->
+  <div class="env env-back" aria-hidden="true"></div>
+  <div class="env env-flap" aria-hidden="true"><div class="flap"><div class="flap-out"></div><div class="flap-in"></div></div></div>
+  <div class="env pocket" id="pocket"></div>
+  <main class="scroller" id="scroller"></main>
+  <div class="env env-front" aria-hidden="true"></div>
+  <div class="env env-seal">
+    <button class="seal" id="seal" type="button" aria-label="Break the seal and open the invitation">
+      <span class="seal-glow" aria-hidden="true"></span>
+      <span class="seal-bot" aria-hidden="true"></span>
+      <span class="seal-top" aria-hidden="true"></span>
+    </button>
+    <div class="specks" id="specks" aria-hidden="true"></div>
+  </div>
+
+  <p class="hint" aria-hidden="true">Tap the seal</p>
+  <nav class="dots" id="dots" aria-label="Pages"></nav>
+  <button class="chip close" id="close" type="button" aria-label="Put the invitation back">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+  </button>
+  <button class="chip sound" id="sound" type="button" aria-label="Mute sounds" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" /><path class="on" d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.5 7.5 0 0 1 0 10.4" /><path class="off" d="M15.5 9.5l5 5M20.5 9.5l-5 5" /></svg>
+  </button>
+  <button class="chip mode" id="mode" type="button" aria-label="Switch to the ivory card">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><g class="rays"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" /></g><circle class="orb" cx="12" cy="12" r="5.5" /><circle class="bite" cx="16.5" cy="7.5" r="5.5" /></svg>
+  </button>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
