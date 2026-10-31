@@ -154,7 +154,7 @@ function arrive(i: number) {
     // One shooting star each time the evening arrives.
     const s = $('.shooter');
     s.classList.remove('go'); void s.getBoundingClientRect(); s.classList.add('go');
-    sound.play('shoot', 0.5);
+    sound.play('shoot', 3.9); // in time with the star crossing the sky
   }
 }
 
