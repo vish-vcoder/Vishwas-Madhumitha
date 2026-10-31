@@ -1,16 +1,9 @@
 import { INVITE } from './content';
+import { wreathSVG } from './wreath';
 
 /** The letter: one continuous sheet of paper, divided into screen-sized pages. */
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-
-const bud = (d: number, x: number, y: number, r: number) =>
-  `<g class="bud" style="--d:${d}"><path d="M0 0 C4 -6 12 -6 17 0 C12 6 4 6 0 0Z" transform="translate(${x} ${y}) rotate(${r})" /></g>`;
-const bloom = (d: number, x: number, y: number, rx: number, ry: number) =>
-  `<g class="bud" style="--d:${d}"><g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288]
-    .map((a) => `<ellipse rx="${rx}" ry="${ry}" cy="-${ry}" transform="rotate(${a})" />`).join('')}</g></g>`;
-const sprig = `<path class="stem" pathLength="1" d="M128 192 C78 186 34 154 26 100 C22 70 32 40 52 18" />
-  ${bud(0, 84, 182, -170)}${bud(1, 50, 160, -130)}${bud(2, 30, 122, -100)}${bud(3, 28, 84, -60)}${bloom(4, 40, 140, 2.3, 5)}${bloom(5, 52, 18, 2, 4.4)}`;
 
 const star = (cls: string, cx: number, cy: number, r: number) =>
   `<path class="star ${cls}" d="M${cx} ${cy - r} Q${cx} ${cy} ${cx + r} ${cy} Q${cx} ${cy} ${cx} ${cy + r} Q${cx} ${cy} ${cx - r} ${cy} Q${cx} ${cy} ${cx} ${cy - r}Z" />`;
@@ -31,7 +24,7 @@ export function letterHTML(guest: string | null): string {
     <div class="flow">
       <p class="greet ink soft">${guest ? esc(INVITE.greeting(guest)) : '&nbsp;'}</p>
       <div class="names-wrap">
-        <svg class="sprigs" viewBox="0 0 300 200" aria-hidden="true"><g>${sprig}</g><g transform="translate(300 0) scale(-1 1)">${sprig}</g><path class="tie" pathLength="1" d="M128 192 C138 193 144 195 150 196 C156 195 162 193 172 192 M150 196 C143 189 134 189 137 194 C140 199 147 198 150 196 C153 198 160 199 163 194 C166 189 157 189 150 196 M150 196 C147 201 144 205 140 208 M150 196 C153 201 156 205 160 208" /></svg>
+        ${wreathSVG()}
         <h1 class="names"><span class="nm foil">${esc(n.first)}</span>${amp}<span class="nm foil">${esc(n.second)}</span></h1>
       </div>
       <div class="invite-block">
