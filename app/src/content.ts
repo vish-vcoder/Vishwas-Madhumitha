@@ -33,8 +33,12 @@ export const INVITE = {
   signoff: 'With love,',
   couple: { src: 'couple.webp', width: 640, height: 985 },
   /** Recorded sound effects in public/sounds; each cue picks one of its takes at random. */
-  // Filled in once the recordings are chosen, e.g. open: ['open-1.m4a', 'open-2.m4a'].
-  sounds: { open: [], close: [], shoot: [], tap: [] } as Record<string, string[]>,
+  sounds: {
+    open: ['open-1.wav', 'open-2.wav'],
+    close: ['close-1.wav', 'close-2.wav'],
+    shoot: ['shoot-1.wav', 'shoot-2.wav'],
+    tap: ['tap-1.wav', 'tap-2.wav'],
+  } as Record<string, string[]>,
 };
 
 export function countdownText(days: number): string {
