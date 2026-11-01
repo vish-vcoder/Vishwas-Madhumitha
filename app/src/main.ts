@@ -9,6 +9,14 @@ import '@fontsource/noto-serif-kannada/400.css';
 import '@fontsource/noto-serif-tamil/400.css';
 import { letterHTML } from './letter';
 import { createSound } from './sound';
+import backDark from './art/back-dark.webp';
+import frontDark from './art/front-dark.webp';
+import flapOutDark from './art/flap-out-dark.webp';
+import flapInDark from './art/flap-in-dark.webp';
+import backLight from './art/back-light.webp';
+import frontLight from './art/front-light.webp';
+import flapOutLight from './art/flap-out-light.webp';
+import flapInLight from './art/flap-in-light.webp';
 
 /**
  * The flow is a small state machine: sealed → opening → open → closing → sealed.
@@ -65,7 +73,10 @@ function layout() {
   set('--p1pad', vh - openY + 20);
   set('--cueY', vh - openY - envH * 0.04);
   const pts: string[] = [];
-  for (let x = 0; x <= lw; x += 5) pts.push(`${x.toFixed(1)}px ${(Math.random() * 2.2).toFixed(1)}px`);
+  // The torn edge comes from a fixed seed, so it never jumps when the layout is recalculated.
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let x = 0; x <= lw; x += 5) pts.push(`${x.toFixed(1)}px ${(rnd() * 2.2).toFixed(1)}px`);
   root.style.setProperty('--deckle', `polygon(${pts.join(',')}, 100% 100%, 0 100%)`);
   place();
 }
@@ -154,10 +165,14 @@ dotEls.forEach((d, i) => d.addEventListener('click', () => scroller.scrollTo({ t
 
 function arrive(i: number) {
   page = i;
-  pages.forEach((p, k) => { p.classList.toggle('in', k === i); if (k <= i) p.classList.add('seen'); });
+  // A page's scene plays the first time it lands and then stays finished; closing the
+  // letter clears 'seen', so reopening plays everything fresh.
+  const first = !pages[i].classList.contains('seen');
+  pages.forEach((p, k) => p.classList.toggle('in', k === i));
+  pages[i].classList.add('seen');
   dotEls.forEach((d, k) => d.toggleAttribute('aria-current', k === i));
-  if (i === 1) {
-    // One shooting star each time the evening arrives.
+  if (i === 1 && first) {
+    // One shooting star the first time the evening arrives.
     const s = $('.shooter');
     s.classList.remove('go'); void s.getBoundingClientRect(); s.classList.add('go');
     sound.play('shoot', 0.5);
@@ -323,3 +338,14 @@ addEventListener('resize', () => { clearTimeout(resizeT); resizeT = window.setTi
 layout();
 document.fonts?.ready.then(layout);
 root.classList.add('ready');
+
+// Once the page is up, quietly fetch what a first switch would otherwise wait for: the other
+// theme's envelope art (decoded, so the swap is instant) and the Kannada and Tamil fonts.
+const whenIdle = (fn: () => void) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 1200));
+addEventListener('load', () => whenIdle(() => {
+  for (const src of [backDark, frontDark, flapOutDark, flapInDark, backLight, frontLight, flapOutLight, flapInLight]) {
+    const img = new Image(); img.src = src; img.decode?.().catch(() => {});
+  }
+  document.fonts?.load('16px "Noto Serif Kannada"', 'ಕನ್ನಡ ವಿಶ್ವಾಸ್').catch(() => {});
+  document.fonts?.load('16px "Noto Serif Tamil"', 'தமிழ் விஸ்வாஸ்').catch(() => {});
+}));
