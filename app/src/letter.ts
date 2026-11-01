@@ -8,6 +8,27 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const star = (cls: string, cx: number, cy: number, r: number) =>
   `<path class="star ${cls}" d="M${cx} ${cy - r} Q${cx} ${cy} ${cx + r} ${cy} Q${cx} ${cy} ${cx} ${cy + r} Q${cx} ${cy} ${cx - r} ${cy} Q${cx} ${cy} ${cx} ${cy - r}Z" />`;
 
+// Venue: a fine arch with three lanterns hanging from its crown. viewBox units.
+const lantern = (cls: string, x: number, top: number, len: number, sc: number) => {
+  const y = top + len;
+  return `<g class="lan ${cls}" style="transform-origin: ${x}px ${top}px">
+    <path class="thread" d="M${x} ${top} V${y}" />
+    <circle class="glow" cx="${x}" cy="${y + 14 * sc}" r="${30 * sc}" />
+    <g transform="translate(${x} ${y}) scale(${sc})">
+      <path class="body" d="M-6 0 H6 L8 4 C11 11 11 17 8 23 L6 27 H-6 L-8 23 C-11 17 -11 11 -8 4 Z" />
+      <path class="ribs" d="M0 4 V23 M-5 6 C-7 12 -7 17 -5 21 M5 6 C7 12 7 17 5 21" />
+      <path class="caps" d="M-6 0 H6 M-6 27 H6 M0 27 V33" /><circle class="tassel" cx="0" cy="35" r="1.4" />
+    </g></g>`;
+};
+const archSVG = () => `<svg class="arch" viewBox="34 44 172 200" aria-hidden="true">
+  <defs><radialGradient id="lanternGlow"><stop offset="0" class="glow-in" /><stop offset="1" class="glow-out" /></radialGradient></defs>
+  <path class="a-line" pathLength="1" d="M48 236 V122 C48 88 80 66 120 52" /><path class="a-line" pathLength="1" d="M192 236 V122 C192 88 160 66 120 52" />
+  <path class="a-line fine" pathLength="1" d="M55 236 V124 C55 94 84 74 120 62" /><path class="a-line fine" pathLength="1" d="M185 236 V124 C185 94 156 74 120 62" />
+  <path class="a-base" pathLength="1" d="M40 236 H200" /><circle class="a-dot" cx="48" cy="236" r="1.8" /><circle class="a-dot" cx="192" cy="236" r="1.8" />
+  <path class="a-swag" pathLength="1" d="M88 82 C100 70 110 66 120 64 C130 66 140 70 152 82" />
+  ${lantern('l2', 88, 82, 40, 0.9)}${lantern('l3', 152, 82, 40, 0.9)}${lantern('l1', 120, 64, 52, 1.15)}
+</svg>`;
+
 const edges = `<i class="edge l e1"></i><i class="edge l e2"></i><i class="edge r e1"></i><i class="edge r e2"></i>`;
 const knots = `<i class="knot l"></i><i class="knot r"></i>`;
 
@@ -75,11 +96,7 @@ export function letterHTML(): string {
     ${edges}${knots}
     <div class="flow">
       <p class="label ink soft" data-t="venueLabel"></p>
-      <svg class="route" viewBox="0 0 80 110" aria-hidden="true">
-        <defs><mask id="routeMask"><path class="reveal" d="M14 4 C60 14 66 34 38 46 C12 58 20 76 40 84" pathLength="1" /></mask></defs>
-        <path class="trail" d="M14 4 C60 14 66 34 38 46 C12 58 20 76 40 84" mask="url(#routeMask)" />
-        <path class="pin" d="M40 108 C40 108 30 98 30 91 A10 10 0 0 1 50 91 C50 98 40 108 40 108Z M40 87.5 A3.5 3.5 0 1 0 40 94.5 A3.5 3.5 0 1 0 40 87.5Z" fill-rule="evenodd" />
-      </svg>
+      ${archSVG()}
       <p class="venue foil" data-t="venueName"></p>
       <p class="addr ink soft">${v.lines.map(esc).join('<br />')}</p>
       <div class="pills">
