@@ -409,7 +409,7 @@ html:is([lang="kn"], [lang="ta"]) .p1 .flow { padding-bottom: 10px; }
    ivory card it simply stands there, unlit. */
 .couple { isolation: isolate; }
 .couple img { position: relative; z-index: 1; }
-.podium { position: absolute; z-index: 0; left: var(--pod-x, -13%); width: var(--pod-w, 124%); bottom: var(--pod-y, -6%); height: auto; overflow: visible; }
+.podium { position: absolute; z-index: 0; left: var(--pod-x, -27%); width: var(--pod-w, 152%); bottom: var(--pod-y, -11%); height: auto; overflow: visible; }
 .podium .side { fill: var(--pod-side); stroke: var(--foil-mid); stroke-width: .6; }
 .podium .top { fill: var(--pod-top); stroke: var(--foil-mid); stroke-width: .7; }
 .podium .rim { fill: none; stroke: var(--foil-mid); stroke-width: 1; opacity: .9; }
@@ -429,3 +429,5 @@ html:is([lang="kn"], [lang="ta"]) .p1 .flow { padding-bottom: 10px; }
 @keyframes pod-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
 /* On ivory the print blend would let the podium show through the clothes; the figures stay solid. */
 [data-theme="light"] .couple img { mix-blend-mode: normal; }
+/* Room under the picture for the podium, so it never overlaps the sign-off text. */
+.p4 .couple { margin-bottom: calc(var(--tw) * .09); }
